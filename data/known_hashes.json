@@ -1,0 +1,34 @@
+[
+  {
+    "algo": "SHA256",
+    "hash": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
+    "label": "EICAR-Test-File",
+    "threat_family": "Test",
+    "severity": "HIGH",
+    "source": "EICAR"
+  },
+  {
+    "algo": "MD5",
+    "hash": "44d88612fea8a8f36de82e1278abb02f",
+    "label": "EICAR-Test-File",
+    "threat_family": "Test",
+    "severity": "HIGH",
+    "source": "EICAR"
+  },
+  {
+    "algo": "SHA256",
+    "hash": "38589426F22787537281FB1A4660728658FF1665EF4EDCCA1A8BCF981AAD6423",
+    "label": "Demo-File-YourName",
+    "threat_family": "Test",
+    "severity": "HIGH",
+    "source": "LocalDemo"
+  },
+  {
+    "algo": "SHA1",
+    "hash": "3395856ce81f2b7382dee72602f798b642f14140",
+    "label": "EICAR-Test-File",
+    "threat_family": "Test",
+    "severity": "HIGH",
+    "source": "EICAR"
+  }
+]

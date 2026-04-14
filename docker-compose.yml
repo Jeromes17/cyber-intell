@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: python main.py
+    volumes:
+      - ./:/app
+    working_dir: /app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+
+  worker:
+    image: python:3.11-slim
+    command: python worker.py
+    volumes:
+      - ./:/app
+    working_dir: /app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis

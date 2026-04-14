@@ -1,0 +1,10 @@
+[
+  {"pattern": "mimikatz.exe", "reason": "Credential dumping tool", "score": 40},
+  {"pattern": "procdump.exe", "reason": "LSASS memory dumping", "score": 25},
+  {"pattern": "nc.exe", "reason": "Netcat remote shell", "score": 25},
+  {"pattern": "powershell.exe -enc", "reason": "Encoded PowerShell payload", "score": 30},
+  {"pattern": "cmd.exe /c powershell", "reason": "Chained LOLBAS execution", "score": 15},
+  {"pattern": "wmic.exe process call create", "reason": "Remote process creation", "score": 20},
+  {"pattern": "rundll32.exe * url.dll,FileProtocolHandler", "reason": "DLL side-loading / LOLBAS", "score": 20},
+  {"pattern": "mshta.exe http", "reason": "HTA-based script execution", "score": 25}
+]

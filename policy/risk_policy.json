@@ -1,0 +1,16 @@
+{
+  "weights": {
+    "signature_hit": 50,
+    "unsigned_system_dir": 15,
+    "suspicious_parent_chain": 20,
+    "bad_ip_reputation": 30,
+    "new_autorun": 20,
+    "hidden_or_ads": 25
+  },
+  "severity_thresholds": {
+    "INFO": [0, 14],
+    "LOW": [15, 29],
+    "MEDIUM": [30, 59],
+    "HIGH": [60, 100]
+  }
+}

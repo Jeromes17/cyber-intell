@@ -1,0 +1,29 @@
+# 🔒 Sensitive
+.env
+.env.*
+
+# 🗄️ Database
+*.db
+
+# 📊 Output / runtime
+output/
+*.log
+
+# 🧪 Trash
+trashh/
+
+# 🧠 Python
+__pycache__/
+*.pyc
+
+# 📦 Virtual env
+venv/
+.venv/
+
+# 💻 IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

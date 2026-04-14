@@ -1,0 +1,19 @@
+{
+  "agent_id": "host-001",
+  "agent_version": "1.0.0",
+  "ts": "2025-12-09T10:00:00Z",
+  "records": [
+    {
+      "ts": "2025-12-09T10:00:00Z",
+      "client_record_id": "rec-0001",
+      "process_name": "chrome.exe",
+      "parent_process": "explorer.exe",
+      "cpu_percent": 12.4,
+      "mem_percent": 8.2,
+      "net_bytes_sent_per_s": 1200,
+      "net_bytes_recv_per_s": 400,
+      "num_child_processes": 1,
+      "process_start_age_seconds": 3600
+    }
+  ]
+}

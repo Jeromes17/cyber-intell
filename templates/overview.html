@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CyberIntell Security Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Bootstrap & Chart.js -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* ===== THEME VARIABLES ===== */
+    :root {
+      --backdrop-tint: rgba(0, 0, 0, 0.45);
+      --glass-bg: rgba(10, 14, 22, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --text: #f3f6fb;
+      --muted: #c8d1de;
+      --table-head: rgba(255, 255, 255, 0.06);
+      --card-bg: rgba(18, 24, 38, 0.55);
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --sev-critical: #dc3545;
+      --sev-high: #ffb400;
+      --sev-medium: #12d2f5;
+      --sev-low: #1fbf83;
+    }
+
+    html[data-theme="light"] {
+      --backdrop-tint: rgba(255, 255, 255, 0.35);
+      --glass-bg: rgba(255, 255, 255, 0.72);
+      --glass-border: rgba(0, 0, 0, 0.07);
+      --text: #20262e;
+      --muted: #606e7b;
+      --table-head: rgba(0, 0, 0, 0.05);
+      --card-bg: rgba(255, 255, 255, 0.70);
+      --shadow: 0 18px 50px rgba(0,0,0,.18);
+    }
+
+    /* ===== PAGE BACKGROUND ===== */
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      position: relative;
+      min-height: 100vh;
+      z-index: 0;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background: url("/static/images/bg-dark.jpg") center center / cover no-repeat fixed;
+      z-index: -2;
+    }
+    html[data-theme="light"] body::before {
+      background: url("/static/images/bg-light.jpg") center center / cover no-repeat fixed;
+    }
+    body::after {
+      content: "";
+      position: fixed; inset: 0;
+      background: var(--backdrop-tint);
+      z-index: -1;
+    }
+
+    /* ===== GLASS CONTAINER ===== */
+    .wrap { display:flex; justify-content:center; align-items:flex-start; padding:48px 18px; min-height:100%; box-sizing:border-box; }
+    .glass {
+      width:100%; max-width:1100px; border-radius:22px; background:var(--glass-bg);
+      border:1px solid var(--glass-border); box-shadow:var(--shadow);
+      backdrop-filter: blur(14px) saturate(130%); -webkit-backdrop-filter: blur(14px) saturate(130%);
+      padding:28px 26px 30px;
+    }
+
+    /* ===== HEADER & CONTROLS ===== */
+    .page-title { font-weight:700; letter-spacing:.3px; text-shadow:0 2px 12px rgba(0,0,0,.25); margin-bottom:6px; }
+    .subtle { color:var(--muted); margin-bottom:14px; }
+
+    .controls-bar {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+
+    .theme-toggle{
+      padding:6px 14px;
+      border-radius:999px;
+      font-weight:600;
+      background: rgba(255,255,255,.08);
+      border:1.5px solid var(--glass-border);
+      color:var(--text);
+      cursor:pointer;
+      transition: transform .2s ease, opacity .2s ease;
+      backdrop-filter: blur(6px);
+    }
+    .theme-toggle:hover { transform: translateY(-1px); }
+
+    /* ===== PANELS ===== */
+    .status-card{
+      padding:22px; border-radius:14px; text-align:center;
+      background: linear-gradient(135deg, rgba(33,150,83,.92), rgba(28,121,63,.90));
+      color:#fff; height:100%; box-shadow:0 10px 28px rgba(0,0,0,.25);
+    }
+    .status-card.infected{ background: linear-gradient(135deg, rgba(220,53,69,.96), rgba(170,26,36,.92)); }
+
+    .panel{ background:var(--card-bg); border-radius:14px; padding:18px; height:100%; border:1px solid var(--glass-border); }
+
+    /* ===== TABLE ===== */
+    table{ color:var(--text); }
+    .table thead{ background: var(--table-head); }
+    .sev-badge{ display:inline-block; min-width:84px; text-align:center; font-weight:700; padding:.2rem .65rem; border-radius:999px; font-size:.82rem; border:1px solid transparent; }
+    .sev-critical{ background: rgba(220,53,69,.20); border-color: rgba(220,53,69,.55); }
+    .sev-high{ background: rgba(255,180,0,.22); color:#222; border-color: rgba(255,180,0,.55); }
+    .sev-medium{ background: rgba(18,210,245,.20); border-color: rgba(18,210,245,.55); }
+    .sev-low{ background: rgba(31,191,131,.22); border-color: rgba(31,191,131,.55); }
+
+    .table { background-color: transparent !important; }
+    .table tbody tr { background-color: transparent !important; color: var(--text); }
+    .table tbody tr td { border-color: rgba(255, 255, 255, 0.1); }
+    html[data-theme="light"] .table tbody tr td { border-color: rgba(0, 0, 0, 0.1); }
+
+    .chart-container{ background:var(--card-bg); border-radius:14px; padding:18px; border:1px solid var(--glass-border); }
+
+    .footer{ color:var(--muted); text-align:center; margin-top:14px; }
+    @media (max-width: 768px){
+      .controls-bar { width:100%; justify-content:center; }
+      .controls-bar > * { flex:1 1 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="glass">
+      <div class="d-flex flex-wrap align-items-end justify-content-between gap-2">
+        <div>
+          <h2 class="page-title">CyberIntell – System Overview</h2>
+          <p class="subtle m-0">Last Updated: {{ current_time }}</p>
+        </div>
+
+        <!-- Control bar -->
+        <div class="controls-bar">
+          <input id="scanPath" type="text" class="form-control"
+                 placeholder="Optional: C:\\Users\\You\\Downloads or /home/you/Downloads"
+                 style="min-width: 280px;">
+          <button class="btn btn-primary" id="runScanBtn">Run System Scan</button>
+          <button class="btn btn-outline-light" id="exportCsvBtn">Export CSV</button>
+          <button class="theme-toggle" id="themeToggle">Toggle Theme</button>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2">
+        <div class="col-md-3">
+          <div class="status-card {{ 'infected' if health == 'Infected' else '' }}">
+            <h5 class="mb-1">System Health</h5>
+            <h2 class="m-0">{{ health }}</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="panel text-center">
+            <h6 class="mb-1">Total Alerts</h6>
+            <h2 class="m-0">{{ total_alerts }}</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="panel text-center">
+            <h6 class="mb-1">High/Critical Threats</h6>
+            <h2 class="m-0" style="color: var(--sev-critical);">{{ total_threats }}</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+        <div class="panel text-center">
+          <h6 class="mb-1">Last Alert Seen</h6>
+          <h5 class="m-0">
+            {% if last_alert_time %}
+              {{ last_alert_time }}
+            {% else %}
+              No alerts yet
+            {% endif %}
+          </h5>
+        </div>
+      </div>
+      </div>
+
+      <div class="row g-3 mt-1">
+        <div class="col-md-8">
+          <div class="panel">
+            <h5 class="mb-3">Recent Alerts</h5>
+
+            <!-- SCROLL CONTAINER -->
+            <div style="max-height: 420px; overflow-y: auto;">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 160px;">Time</th>
+                    <th style="width: 120px;">Severity</th>
+                    <th style="width: 40%;">Artifact</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {% if recent_alerts and recent_alerts|length > 0 %}
+                    {% for alert in recent_alerts %}
+                      {% set sev = alert.get('severity','') %}
+                      <tr>
+                        <td>
+                          {{ (alert.get('ts') or alert.get('timestamp',''))[:19] }}
+                        </td>
+
+                        <td>
+                          <span class="sev-badge
+                            {% if sev == 'CRITICAL' %}sev-critical
+                            {% elif sev == 'HIGH' %}sev-high
+                            {% elif sev == 'MEDIUM' %}sev-medium
+                            {% else %}sev-low{% endif %}">
+                            {{ sev }}
+                          </span>
+                        </td>
+
+                        <td>
+                          {% set art = (alert.get('meta', {}) or {}).get('artifact', '') %}
+                          {{ art[:60] }}{% if art and art|length > 60 %}...{% endif %}
+                        </td>
+
+                        <td>
+                          {{ alert.get('reason','') }}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="4" class="text-muted text-center">
+                        No alerts recorded.
+                      </td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="chart-container">
+            <h6 class="text-center mb-2">Alert Severity Distribution</h6>
+            <canvas id="severityChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <hr>
+        <p>CyberIntell Threat Analysis Dashboard &copy; {{ current_time[:4] }}</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === THEME TOGGLE ===
+    const btn = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    btn.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = (cur === 'dark') ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      renderSeverityChart(window.__sevCounts || {CRITICAL:0,HIGH:0,MEDIUM:0,LOW:0});
+    });
+
+    // === CHART ===
+    let sevChart;
+    function getTextColorFromTheme() {
+      const v = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
+      return v || '#222';
+    }
+    function renderSeverityChart(sev) {
+      const ctx = document.getElementById('severityChart').getContext('2d');
+      const legendColor = getTextColorFromTheme();
+      if (sevChart) sevChart.destroy();
+      sevChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(sev),
+          datasets: [{
+            data: Object.values(sev),
+            backgroundColor: ['#dc3545', '#ffb400', '#12d2f5', '#1fbf83'],
+            borderWidth: 0,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          cutout: '64%',
+          plugins: {
+            legend: { position: 'bottom', labels: { color: legendColor, boxWidth: 18, padding: 16 } },
+            tooltip: { titleColor: legendColor, bodyColor: legendColor }
+          }
+        }
+      });
+    }
+
+    // === LOAD ALERTS & RENDER CHART ===
+    fetch('/api/alerts').then(r => r.json()).then(alerts => {
+      const sev = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
+      alerts.forEach(a => { if (sev[a.severity] !== undefined) sev[a.severity]++; });
+      window.__sevCounts = sev;
+      renderSeverityChart(sev);
+    });
+
+    // === SCAN PATH ===
+    const runBtn = document.getElementById('runScanBtn');
+    runBtn.addEventListener('click', async () => {
+      const path = document.getElementById('scanPath').value.trim();
+      try {
+        runBtn.disabled = true;
+        runBtn.textContent = 'Scanning...';
+        const res = await fetch('/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Scan failed');
+        alert(`${data.message}\nAlerts: ${data.alerts_detected}\nSeverity: ${data.overall_severity}`);
+        location.reload();
+      } catch (e) {
+        alert('Scan failed. ' + e.message);
+      } finally {
+        runBtn.disabled = false;
+        runBtn.textContent = 'Run System Scan';
+      }
+    });
+
+    // === EXPORT CSV ===
+    const exportBtn = document.getElementById('exportCsvBtn');
+    exportBtn.addEventListener('click', () => {
+      exportBtn.disabled = true;
+      exportBtn.textContent = 'Preparing...';
+      window.location.href = '/export/csv';
+      setTimeout(() => {
+        exportBtn.disabled = false;
+        exportBtn.textContent = 'Export CSV';
+      }, 1200);
+    });
+
+    setTimeout(() => location.reload(), 60000);
+  </script>
+</body>
+</html>
